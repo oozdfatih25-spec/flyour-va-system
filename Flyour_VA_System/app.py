@@ -85,6 +85,14 @@ def init_db():
                      (id INTEGER PRIMARY KEY AUTOINCREMENT, pilot_id TEXT, title TEXT, description TEXT, badge_icon TEXT DEFAULT '🏆')''')
         conn.commit()
 
+        # Eski database.db dosyasında eksik olan is_admin sütununu otomatik ekleme
+        try:
+            c.execute("ALTER TABLE pilots ADD COLUMN is_admin BOOLEAN DEFAULT 0")
+            conn.commit()
+            print("is_admin sütunu başarıyla eklendi!")
+        except Exception:
+            pass  # Sütun zaten ekliyse hata vermeden devam eder
+
     # --- FLYOUR001 HESABINI OTOMATİK OLUŞTUR / ŞİFRESİNİ VE YETKİSİNİ GÜNCELLE ---
     try:
         admin_check_query = 'SELECT * FROM pilots WHERE pilot_id = %s' if DATABASE_URL else 'SELECT * FROM pilots WHERE pilot_id = ?'
@@ -271,7 +279,7 @@ def get_my_achievements():
 @app.route('/api/admin/pilots', methods=['GET'])
 def admin_get_pilots():
     if session.get('pilot_id') != 'FLYOUR001' and not session.get('is_admin'):
-        return jsonify({'status': 'error', 'message': 'Bu alana sadece Yönetici (FLYOUR001) erişabilir!'}), 403
+        return jsonify({'status': 'error', 'message': 'Bu alana sadece Yönetici (FLYOUR001) erişebilir!'}), 403
     
     conn = get_db()
     c = conn.cursor()
