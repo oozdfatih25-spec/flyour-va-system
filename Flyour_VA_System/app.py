@@ -84,6 +84,26 @@ def init_db():
         c.execute('''CREATE TABLE IF NOT EXISTS achievements 
                      (id INTEGER PRIMARY KEY AUTOINCREMENT, pilot_id TEXT, title TEXT, description TEXT, badge_icon TEXT DEFAULT '🏆')''')
         conn.commit()
+
+    # --- FLYOUR001 HESABINI OTOMATİK OLUŞTUR / ŞİFRESİNİ VE YETKİSİNİ GÜNCELLE ---
+    try:
+        admin_check_query = 'SELECT * FROM pilots WHERE pilot_id = %s' if DATABASE_URL else 'SELECT * FROM pilots WHERE pilot_id = ?'
+        c.execute(admin_check_query, ('FLYOUR001',))
+        admin_user = c.fetchone()
+
+        if not admin_user:
+            insert_admin_query = 'INSERT INTO pilots (pilot_id, name, email, password, is_admin, rank) VALUES (%s, %s, %s, %s, %s, %s)' if DATABASE_URL else 'INSERT INTO pilots (pilot_id, name, email, password, is_admin, rank) VALUES (?, ?, ?, ?, ?, ?)'
+            c.execute(insert_admin_query, ('FLYOUR001', 'Fatih Özdemir', 'admin@flyour.com', '123456', True, 'Captain'))
+            conn.commit()
+            print("FLYOUR001 Admin Hesabı Başarıyla Oluşturuldu!")
+        else:
+            update_admin_query = 'UPDATE pilots SET password = %s, is_admin = %s WHERE pilot_id = %s' if DATABASE_URL else 'UPDATE pilots SET password = ?, is_admin = ? WHERE pilot_id = ?'
+            c.execute(update_admin_query, ('123456', True, 'FLYOUR001'))
+            conn.commit()
+            print("FLYOUR001 Hesabı Şifre ve Admin Yetkisi Güncellendi!")
+    except Exception as err:
+        print("Admin hesabı ayarlanırken hata:", err)
+
     conn.close()
 
 try:
@@ -111,7 +131,6 @@ def check_auth():
         conn.close()
         
         if user:
-            # FLYOUR001 özel kontrolü
             is_admin = True if user['pilot_id'] == 'FLYOUR001' else bool(user['is_admin'])
             return jsonify({
                 'authenticated': True,
@@ -140,8 +159,6 @@ def register():
     try:
         conn = get_db()
         c = conn.cursor()
-        
-        # Eğer kaydolmaya çalışan id FLYOUR001 ise doğrudan Admin yetkisi tanımla
         is_admin = True if pilot_id == 'FLYOUR001' else False
 
         query = 'INSERT INTO pilots (pilot_id, name, email, password, is_admin) VALUES (%s, %s, %s, %s, %s)' if DATABASE_URL else 'INSERT INTO pilots (pilot_id, name, email, password, is_admin) VALUES (?, ?, ?, ?, ?)'
@@ -169,8 +186,6 @@ def login():
     if user:
         session.permanent = True
         session['pilot_id'] = user['pilot_id']
-        
-        # FLYOUR001 girişi yapıldığında oturuma admin yetkisini sabitle
         is_admin_user = True if user['pilot_id'] == 'FLYOUR001' else bool(user['is_admin'])
         session['is_admin'] = is_admin_user
         
@@ -256,7 +271,7 @@ def get_my_achievements():
 @app.route('/api/admin/pilots', methods=['GET'])
 def admin_get_pilots():
     if session.get('pilot_id') != 'FLYOUR001' and not session.get('is_admin'):
-        return jsonify({'status': 'error', 'message': 'Bu alana sadece Yönetici (FLYOUR001) erişebilir!'}), 403
+        return jsonify({'status': 'error', 'message': 'Bu alana sadece Yönetici (FLYOUR001) erişabilir!'}), 403
     
     conn = get_db()
     c = conn.cursor()
