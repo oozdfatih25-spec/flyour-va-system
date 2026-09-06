@@ -7,13 +7,16 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'flyour-va-secret-key-2026'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///flyour_va.db'
+
+# Render ortamında varsayılan SQLite veritabanı yolu
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'flyour_va.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
 # ==========================================
-# VERİTABANI MODELLERİ (MODELS)
+# VERİTABANI MODELLERİ (DATABASE MODELS)
 # ==========================================
 
 class Pilot(db.Model):
@@ -29,7 +32,7 @@ class Pirep(db.Model):
     dep_icao = db.Column(db.String(4), nullable=False)
     arr_icao = db.Column(db.String(4), nullable=False)
     planned_flight_time = db.Column(db.Float, nullable=False) # Planlanan Süre (Saat)
-    reported_flight_time = db.Column(db.Float, nullable=False) # Pilotun Bildirdiği Süre (Saat)
+    reported_flight_time = db.Column(db.Float, nullable=False) # Pilotun Bildirdiği Süre
     approved_flight_time = db.Column(db.Float, nullable=True)  # Dispatcher'ın Onayladığı Süre
     status = db.Column(db.String(20), default='PENDING')       # PENDING, APPROVED, REJECTED
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -58,12 +61,12 @@ def get_metar(icao_code):
 # ROTALAR VE PANEL FONKSİYONLARI
 # ==========================================
 
-# Ana Sayfa / Dashboard
+# Ana Sayfa
 @app.route('/')
 def home():
     return render_template('index.html')
 
-# 1. API: CANLI METAR SORGULAMA (AJAX İLE KULLANILABİLİR)
+# 1. API: CANLI METAR SORGULAMA
 @app.route('/api/metar/<icao>')
 def api_metar(icao):
     metar_text = get_metar(icao)
@@ -81,11 +84,10 @@ def ofp_calculator():
         pax = int(request.form.get('pax_count', 0))
         cargo_kg = float(request.form.get('cargo_kg', 0))
         
-        # Ortalama Dar Gövde (A320 / B738) Hesabı:
+        # A320 / B738 Tipi Dar Gövde Yakıt & Yük Hesabı:
         pax_weight = pax * 84.0 # Yolcu + Kabin Bagajı
         payload = pax_weight + cargo_kg
         
-        # Yakıt Hesabı (Mesafe başı ~4.5 kg + Standart Yedek ve Rezervler)
         trip_fuel = distance * 4.5
         alternate_fuel = 1200.0
         reserve_fuel = 1500.0
@@ -114,10 +116,10 @@ def ofp_calculator():
 # 3. DISPATCHER DASHBOARD (ONAY BEKLEYEN PIREP'LER)
 @app.route('/dispatcher/dashboard')
 def dispatcher_dashboard():
-    pending_pireps = Pirep.query.filter_eq(Pirep.status == 'PENDING').all() if hasattr(Pirep.query, 'filter_eq') else Pirep.query.filter_by(status='PENDING').all()
+    pending_pireps = Pirep.query.filter_by(status='PENDING').all()
     return render_template('dispatcher_dashboard.html', pireps=pending_pireps)
 
-# 3. DISPATCHER PIREP ONAY / REDDET / SÜRE DÜZELTME ISLEMİ
+# 4. DISPATCHER PIREP ONAY / REDDET / SÜRE DÜZELTME
 @app.route('/dispatcher/review-pirep/<int:pirep_id>', methods=['POST'])
 def review_pirep(pirep_id):
     pirep = Pirep.query.get_or_404(pirep_id)
@@ -125,7 +127,6 @@ def review_pirep(pirep_id):
     custom_time = request.form.get('custom_flight_time') # Dispatcher'ın elle girdiği süre
 
     if action == 'approve':
-        # Eğer dispatcher elle süre girdiyse onu kullanır, yoksa pilotun bildirdiği süreyi alır
         if custom_time and custom_time.strip() != "":
             final_hours = float(custom_time)
         else:
@@ -134,7 +135,7 @@ def review_pirep(pirep_id):
         pirep.approved_flight_time = final_hours
         pirep.status = 'APPROVED'
 
-        # Pilotun toplam uçuş saatini güncelle
+        # Pilotun toplam saatini güncelle
         pilot = Pilot.query.get(pirep.pilot_id)
         if pilot:
             pilot.total_hours = round(pilot.total_hours + final_hours, 2)
@@ -148,7 +149,7 @@ def review_pirep(pirep_id):
     db.session.commit()
     return redirect(url_for('dispatcher_dashboard'))
 
-# TEST İÇİN ÖRNEK VERİ OLUŞTURMA ROTASI
+# TEST / İLK KURULUM ROTASI
 @app.route('/init-db')
 def init_db():
     db.create_all()
@@ -157,20 +158,21 @@ def init_db():
         db.session.add(sample_pilot)
         db.session.commit()
         
-        # Test için örnek bir PIREP (Süre aşımı senaryosu)
         sample_pirep = Pirep(
             pilot_id=sample_pilot.id,
             dep_icao='LTFM',
             arr_icao='LTAI',
             planned_flight_time=1.2,
-            reported_flight_time=2.8 # 1.6 saatlik bir fark (Süre aşımı uyarısı verecek!)
+            reported_flight_time=2.8 # 1.6 saatlik aşım uyarısı için örnek
         )
         db.session.add(sample_pirep)
         db.session.commit()
-        return "Veritabanı oluşturuldu ve test verileri eklendi!"
-    return "Veritabanı zaten mevcut."
+        return "Veritabanı oluşturuldu ve test verileri yüklendi!"
+    return "Veritabanı zaten hazır."
+
+# TABLOLARI OTOMATİK OLUŞTURMA
+with app.app_context():
+    db.create_all()
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
