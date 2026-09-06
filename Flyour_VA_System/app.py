@@ -1,333 +1,273 @@
-from flask import Flask, render_template, request, jsonify, session, send_from_directory
-import os
-from datetime import datetime, timedelta
-import zoneinfo
-import psycopg
-from psycopg.rows import dict_row
+from flask import Flask, render_template, request, jsonify, session
+import datetime
 
 app = Flask(__name__)
+app.secret_key = 'flyour-secret-key-change-this'
 
-# Güvenli Gizli Anahtar ve Kalıcı Oturum (30 Gün)
-app.secret_key = os.environ.get('SECRET_KEY', 'flyour_va_secret_key_2026_super_secure')
-app.permanent_session_lifetime = timedelta(days=30)
+# ---------------------------------------------------------
+# SİMÜLE EDİLEN VERİTABANI (MEMORY DATA)
+# ---------------------------------------------------------
 
-# Türkiye Saat Dilimi (TRT - UTC+3)
-TURKEY_TZ = zoneinfo.ZoneInfo("Europe/Istanbul")
+users = [
+    {
+        "id": 1,
+        "pilot_id": "FLYOUR001",
+        "name": "Fatih Özdemir",
+        "email": "fatih@flyour.com",
+        "password": "123",
+        "flight_hours": 12.5,
+        "rank": "Kaptan Pilot",
+        "is_admin": True
+    },
+    {
+        "id": 2,
+        "pilot_id": "FLYOUR002",
+        "name": "Ahmet Yılmaz",
+        "email": "ahmet@flyour.com",
+        "password": "123",
+        "flight_hours": 5.0,
+        "rank": "İkinci Pilot",
+        "is_admin": False
+    }
+]
 
-def get_turkey_time():
-    return datetime.now(TURKEY_TZ)
+routes = [
+    {
+        "id": 101,
+        "assigned_pilot_id": "FLYOUR002",
+        "flight_number": "FO102",
+        "departure": "LTFM",
+        "arrival": "LTAI",
+        "aircraft": "A320"
+    }
+]
 
-# Render PostgreSQL Bağlantı Adresi
-DATABASE_URL = os.environ.get('DATABASE_URL')
+flight_reports = []
 
-def get_db():
-    if DATABASE_URL:
-        conn = psycopg.connect(DATABASE_URL, row_factory=dict_row)
-        return conn
-    else:
-        import sqlite3
-        db_path = os.path.join(app.root_path, 'database.db')
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-        return conn
+achievements = [
+    {
+        "pilot_id": "FLYOUR001",
+        "badge_icon": "✈️",
+        "title": "İlk Kanat",
+        "description": "Flyour VA ailesine katıldı."
+    }
+]
 
-def init_db():
-    conn = get_db()
-    c = conn.cursor()
-    if DATABASE_URL:
-        # Pilotlar Tablosu
-        c.execute('''CREATE TABLE IF NOT EXISTS pilots 
-                     (id SERIAL PRIMARY KEY, 
-                      pilot_id VARCHAR(50) UNIQUE NOT NULL, 
-                      name VARCHAR(100) NOT NULL, 
-                      email VARCHAR(100), 
-                      password VARCHAR(255) NOT NULL, 
-                      flight_hours REAL DEFAULT 0.0,
-                      rank VARCHAR(50) DEFAULT 'Captain',
-                      is_admin BOOLEAN DEFAULT FALSE)''')
-        
-        # Rotalar Tablosu
-        c.execute('''CREATE TABLE IF NOT EXISTS routes 
-                     (id SERIAL PRIMARY KEY, 
-                      flight_number VARCHAR(20) NOT NULL, 
-                      departure VARCHAR(10) NOT NULL, 
-                      arrival VARCHAR(10) NOT NULL, 
-                      aircraft VARCHAR(50) NOT NULL, 
-                      assigned_pilot_id VARCHAR(50))''')
+announcements = [
+    {
+        "id": 1,
+        "title": "Flyour VA Paneline Hoş Geldiniz!",
+        "content": "Yeni uçuş raporlama ve duyuru sistemimiz aktif edilmiştir. Keyifli uçuşlar dileriz.",
+        "date": "2026-09-06"
+    }
+]
 
-        # Uçuş Raporları Tablosu
-        c.execute('''CREATE TABLE IF NOT EXISTS flight_reports 
-                     (id SERIAL PRIMARY KEY, 
-                      pilot_id VARCHAR(50) NOT NULL, 
-                      flight_number VARCHAR(20) NOT NULL, 
-                      departure VARCHAR(10) NOT NULL, 
-                      arrival VARCHAR(10) NOT NULL, 
-                      flight_time REAL NOT NULL, 
-                      status VARCHAR(20) DEFAULT 'Approved', 
-                      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
-
-        # Ödüller & Başarılar Tablosu
-        c.execute('''CREATE TABLE IF NOT EXISTS achievements 
-                     (id SERIAL PRIMARY KEY, 
-                      pilot_id VARCHAR(50) NOT NULL, 
-                      title VARCHAR(100) NOT NULL, 
-                      description TEXT, 
-                      badge_icon VARCHAR(50) DEFAULT '🏆')''')
-        conn.commit()
-    else:
-        c.execute('''CREATE TABLE IF NOT EXISTS pilots 
-                     (id INTEGER PRIMARY KEY AUTOINCREMENT, pilot_id TEXT UNIQUE, name TEXT, email TEXT, password TEXT, flight_hours REAL DEFAULT 0.0, rank TEXT DEFAULT 'Captain', is_admin BOOLEAN DEFAULT 0)''')
-        c.execute('''CREATE TABLE IF NOT EXISTS routes 
-                     (id INTEGER PRIMARY KEY AUTOINCREMENT, flight_number TEXT, departure TEXT, arrival TEXT, aircraft TEXT, assigned_pilot_id TEXT)''')
-        c.execute('''CREATE TABLE IF NOT EXISTS flight_reports 
-                     (id INTEGER PRIMARY KEY AUTOINCREMENT, pilot_id TEXT, flight_number TEXT, departure TEXT, arrival TEXT, flight_time REAL, status TEXT DEFAULT 'Approved', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
-        c.execute('''CREATE TABLE IF NOT EXISTS achievements 
-                     (id INTEGER PRIMARY KEY AUTOINCREMENT, pilot_id TEXT, title TEXT, description TEXT, badge_icon TEXT DEFAULT '🏆')''')
-        conn.commit()
-
-        # Eski database.db dosyasında eksik olan is_admin sütununu otomatik ekleme
-        try:
-            c.execute("ALTER TABLE pilots ADD COLUMN is_admin BOOLEAN DEFAULT 0")
-            conn.commit()
-            print("is_admin sütunu başarıyla eklendi!")
-        except Exception:
-            pass  # Sütun zaten ekliyse hata vermeden devam eder
-
-    # --- FLYOUR001 HESABINI OTOMATİK OLUŞTUR / ŞİFRESİNİ VE YETKİSİNİ GÜNCELLE ---
-    try:
-        admin_check_query = 'SELECT * FROM pilots WHERE pilot_id = %s' if DATABASE_URL else 'SELECT * FROM pilots WHERE pilot_id = ?'
-        c.execute(admin_check_query, ('FLYOUR001',))
-        admin_user = c.fetchone()
-
-        if not admin_user:
-            insert_admin_query = 'INSERT INTO pilots (pilot_id, name, email, password, is_admin, rank) VALUES (%s, %s, %s, %s, %s, %s)' if DATABASE_URL else 'INSERT INTO pilots (pilot_id, name, email, password, is_admin, rank) VALUES (?, ?, ?, ?, ?, ?)'
-            c.execute(insert_admin_query, ('FLYOUR001', 'Fatih Özdemir', 'admin@flyour.com', '123456', True, 'Captain'))
-            conn.commit()
-            print("FLYOUR001 Admin Hesabı Başarıyla Oluşturuldu!")
-        else:
-            update_admin_query = 'UPDATE pilots SET password = %s, is_admin = %s WHERE pilot_id = %s' if DATABASE_URL else 'UPDATE pilots SET password = ?, is_admin = ? WHERE pilot_id = ?'
-            c.execute(update_admin_query, ('123456', True, 'FLYOUR001'))
-            conn.commit()
-            print("FLYOUR001 Hesabı Şifre ve Admin Yetkisi Güncellendi!")
-    except Exception as err:
-        print("Admin hesabı ayarlanırken hata:", err)
-
-    conn.close()
-
-try:
-    init_db()
-except Exception as e:
-    print("DB Init Error:", e)
-
-@app.route('/manifest.json')
-def serve_manifest():
-    return send_from_directory(os.path.join(app.root_path, 'static'), 'manifest.json')
+# ---------------------------------------------------------
+# SAYFA VE KULLANICI (AUTH) ROTALARI
+# ---------------------------------------------------------
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Oturum Kontrolü (FLYOUR001 Otomatik Admin Tanımlama)
 @app.route('/api/check-auth', methods=['GET'])
 def check_auth():
-    if 'pilot_id' in session:
-        conn = get_db()
-        c = conn.cursor()
-        query = 'SELECT pilot_id, name, flight_hours, rank, is_admin FROM pilots WHERE pilot_id=%s' if DATABASE_URL else 'SELECT pilot_id, name, flight_hours, rank, is_admin FROM pilots WHERE pilot_id=?'
-        c.execute(query, (session['pilot_id'],))
-        user = c.fetchone()
-        conn.close()
-        
+    user_id = session.get('user_id')
+    if user_id:
+        user = next((u for u in users if u['id'] == user_id), None)
         if user:
-            is_admin = True if user['pilot_id'] == 'FLYOUR001' else bool(user['is_admin'])
             return jsonify({
                 'authenticated': True,
                 'user': {
+                    'id': user['id'],
                     'pilot_id': user['pilot_id'],
                     'name': user['name'],
                     'flight_hours': user['flight_hours'],
                     'rank': user['rank'],
-                    'is_admin': is_admin
+                    'is_admin': user['is_admin']
                 }
             })
     return jsonify({'authenticated': False})
 
-# Kayıt API
-@app.route('/api/register', methods=['POST'])
-def register():
-    data = request.json
-    name = data.get('name')
-    email = data.get('email')
-    password = data.get('password')
-    pilot_id = data.get('pilot_id', '').upper().strip()
-    
-    if not pilot_id or not password or not name:
-        return jsonify({'status': 'error', 'message': 'Lütfen tüm alanları doldurun!'})
-
-    try:
-        conn = get_db()
-        c = conn.cursor()
-        is_admin = True if pilot_id == 'FLYOUR001' else False
-
-        query = 'INSERT INTO pilots (pilot_id, name, email, password, is_admin) VALUES (%s, %s, %s, %s, %s)' if DATABASE_URL else 'INSERT INTO pilots (pilot_id, name, email, password, is_admin) VALUES (?, ?, ?, ?, ?)'
-        c.execute(query, (pilot_id, name, email, password, is_admin))
-        conn.commit()
-        conn.close()
-        return jsonify({'status': 'success', 'message': 'Kayıt başarılı! Şimdi giriş yapabilirsiniz.'})
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': 'Bu Pilot ID zaten alınmış veya kayıt hatası oluştu.'})
-
-# Giriş API (FLYOUR001 Yetki Doğrulama)
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.json
-    pilot_id = data.get('pilot_id', '').upper().strip()
+    pilot_id = data.get('pilot_id')
     password = data.get('password')
-    
-    conn = get_db()
-    c = conn.cursor()
-    query = 'SELECT pilot_id, name, flight_hours, rank, is_admin FROM pilots WHERE pilot_id=%s AND password=%s' if DATABASE_URL else 'SELECT pilot_id, name, flight_hours, rank, is_admin FROM pilots WHERE pilot_id=? AND password=?'
-    c.execute(query, (pilot_id, password))
-    user = c.fetchone()
-    conn.close()
-    
-    if user:
-        session.permanent = True
-        session['pilot_id'] = user['pilot_id']
-        is_admin_user = True if user['pilot_id'] == 'FLYOUR001' else bool(user['is_admin'])
-        session['is_admin'] = is_admin_user
-        
-        return jsonify({
-            'status': 'success',
-            'user': {
-                'pilot_id': user['pilot_id'],
-                'name': user['name'],
-                'flight_hours': user['flight_hours'],
-                'rank': user['rank'],
-                'is_admin': is_admin_user
-            }
-        })
-    else:
-        return jsonify({'status': 'error', 'message': 'Hatalı Pilot ID veya Şifre!'})
 
-# Çıkış API
+    user = next((u for u in users if u['pilot_id'].upper() == pilot_id.upper() and u['password'] == password), None)
+    if user:
+        session['user_id'] = user['id']
+        return jsonify({'status': 'success', 'message': 'Giriş başarılı!'})
+    
+    return jsonify({'status': 'error', 'message': 'Hatalı Pilot ID veya Şifre!'}), 401
+
+@app.route('/api/register', methods=['POST'])
+def register():
+    data = request.json
+    pilot_id = data.get('pilot_id').upper()
+    
+    if any(u['pilot_id'] == pilot_id for u in users):
+        return jsonify({'status': 'error', 'message': 'Bu Pilot ID zaten kullanılıyor!'}), 400
+
+    new_user = {
+        "id": len(users) + 1,
+        "pilot_id": pilot_id,
+        "name": data.get('name'),
+        "email": data.get('email'),
+        "password": data.get('password'),
+        "flight_hours": 0.0,
+        "rank": "Öğrenci Pilot",
+        "is_admin": False
+    }
+    users.append(new_user)
+    return jsonify({'status': 'success', 'message': 'Kayıt başarıyla oluşturuldu! Giriş yapabilirsiniz.'})
+
 @app.route('/api/logout', methods=['POST'])
 def logout():
-    session.clear()
+    session.pop('user_id', None)
     return jsonify({'status': 'success'})
 
-# --- PİLOT KİŞİSEL İŞLEMLERİ ---
+# ---------------------------------------------------------
+# DUYURU ROTALARI
+# ---------------------------------------------------------
 
-# Uçuş Raporu Kaydetme (Saat Ekleme)
-@app.route('/api/submit-flight', methods=['POST'])
-def submit_flight():
-    if 'pilot_id' not in session:
-        return jsonify({'status': 'error', 'message': 'Oturum açmanız gerekiyor.'})
+@app.route('/api/announcements', methods=['GET'])
+def get_announcements():
+    return jsonify(announcements)
+
+@app.route('/api/admin/add-announcement', methods=['POST'])
+def add_announcement():
+    user_id = session.get('user_id')
+    user = next((u for u in users if u['id'] == user_id), None)
     
+    if not user or not user.get('is_admin'):
+        return jsonify({'status': 'error', 'message': 'Yetkisiz erişim!'}), 403
+        
     data = request.json
-    flight_number = data.get('flight_number')
-    departure = data.get('departure', '').upper().strip()
-    arrival = data.get('arrival', '').upper().strip()
-    flight_time = float(data.get('flight_time', 0))
+    title = data.get('title')
+    content = data.get('content')
+    
+    if not title or not content:
+        return jsonify({'status': 'error', 'message': 'Lütfen tüm alanları doldurun!'}), 400
+        
+    new_ann = {
+        "id": len(announcements) + 1,
+        "title": title,
+        "content": content,
+        "date": datetime.date.today().strftime("%Y-%m-%d")
+    }
+    announcements.insert(0, new_ann)
+    return jsonify({'status': 'success', 'message': 'Duyuru başarıyla yayınlandı!'})
 
-    conn = get_db()
-    c = conn.cursor()
-    
-    query_report = 'INSERT INTO flight_reports (pilot_id, flight_number, departure, arrival, flight_time) VALUES (%s, %s, %s, %s, %s)' if DATABASE_URL else 'INSERT INTO flight_reports (pilot_id, flight_number, departure, arrival, flight_time) VALUES (?, ?, ?, ?, ?)'
-    c.execute(query_report, (session['pilot_id'], flight_number, departure, arrival, flight_time))
-    
-    query_update = 'UPDATE pilots SET flight_hours = flight_hours + %s WHERE pilot_id = %s' if DATABASE_URL else 'UPDATE pilots SET flight_hours = flight_hours + ? WHERE pilot_id = ?'
-    c.execute(query_update, (flight_time, session['pilot_id']))
-    
-    conn.commit()
-    conn.close()
-    return jsonify({'status': 'success', 'message': 'Uçuş raporu kaydedildi ve uçuş saatinize eklendi!'})
+# ---------------------------------------------------------
+# UÇUŞ VE GÖREV (PIREP & ROUTE) ROTALARI
+# ---------------------------------------------------------
 
-# Kendisine Atanan Rotalar
 @app.route('/api/my-routes', methods=['GET'])
 def get_my_routes():
-    if 'pilot_id' not in session:
+    user_id = session.get('user_id')
+    user = next((u for u in users if u['id'] == user_id), None)
+    if not user:
         return jsonify([])
     
-    conn = get_db()
-    c = conn.cursor()
-    query = 'SELECT flight_number, departure, arrival, aircraft FROM routes WHERE assigned_pilot_id = %s' if DATABASE_URL else 'SELECT flight_number, departure, arrival, aircraft FROM routes WHERE assigned_pilot_id = ?'
-    c.execute(query, (session['pilot_id'],))
-    routes = c.fetchall()
-    conn.close()
-    
-    return jsonify([{'flight_number': r['flight_number'], 'departure': r['departure'], 'arrival': r['arrival'], 'aircraft': r['aircraft']} for r in routes])
+    user_routes = [r for r in routes if r['assigned_pilot_id'] == user['pilot_id']]
+    return jsonify(user_routes)
 
-# Kendisine Verilen Ödüller
+@app.route('/api/submit-flight', methods=['POST'])
+def submit_flight():
+    user_id = session.get('user_id')
+    user = next((u for u in users if u['id'] == user_id), None)
+    if not user:
+        return jsonify({'status': 'error', 'message': 'Oturum açmanız gerekiyor!'}), 401
+
+    data = request.json
+    flight_time = float(data.get('flight_time', 0))
+    
+    # Pilotun uçuş saatini güncelle
+    user['flight_hours'] += flight_time
+
+    # Rapor veritabanına ekle
+    report = {
+        "id": len(flight_reports) + 1,
+        "pilot_id": user['pilot_id'],
+        "pilot_name": user['name'],
+        "flight_number": data.get('flight_number'),
+        "departure": data.get('departure'),
+        "arrival": data.get('arrival'),
+        "flight_time": flight_time
+    }
+    flight_reports.insert(0, report)
+
+    # Eğer atanmış bir rotadan yapıldıysa listeden sil
+    route_id = data.get('route_id')
+    if route_id:
+        global routes
+        routes = [r for r in routes if str(r['id']) != str(route_id)]
+
+    return jsonify({'status': 'success', 'message': 'Uçuş raporu başarıyla kaydedildi ve saatinize işlendi!'})
+
 @app.route('/api/my-achievements', methods=['GET'])
 def get_my_achievements():
-    if 'pilot_id' not in session:
+    user_id = session.get('user_id')
+    user = next((u for u in users if u['id'] == user_id), None)
+    if not user:
         return jsonify([])
     
-    conn = get_db()
-    c = conn.cursor()
-    query = 'SELECT title, description, badge_icon FROM achievements WHERE pilot_id = %s' if DATABASE_URL else 'SELECT title, description, badge_icon FROM achievements WHERE pilot_id = ?'
-    c.execute(query, (session['pilot_id'],))
-    achievements = c.fetchall()
-    conn.close()
-    
-    return jsonify([{'title': a['title'], 'description': a['description'], 'badge_icon': a['badge_icon']} for a in achievements])
+    user_ach = [a for a in achievements if a['pilot_id'] == user['pilot_id']]
+    return jsonify(user_ach)
 
-# --- FLYOUR001 ÖZEL YÖNETİCİ (ADMIN) API'LERİ ---
+# ---------------------------------------------------------
+# YÖNETİCİ (ADMIN) ROTALARI
+# ---------------------------------------------------------
 
-# Tüm Pilotları ve Şifreleri Görme (Sadece FLYOUR001 Görür)
-@app.route('/api/admin/pilots', methods=['GET'])
-def admin_get_pilots():
-    if session.get('pilot_id') != 'FLYOUR001' and not session.get('is_admin'):
-        return jsonify({'status': 'error', 'message': 'Bu alana sadece Yönetici (FLYOUR001) erişebilir!'}), 403
-    
-    conn = get_db()
-    c = conn.cursor()
-    c.execute('SELECT id, pilot_id, name, email, password, flight_hours, rank, is_admin FROM pilots')
-    pilots = c.fetchall()
-    conn.close()
-    return jsonify([dict(p) for p in pilots])
+@app.route('/api/admin/reports', methods=['GET'])
+def get_admin_reports():
+    user_id = session.get('user_id')
+    user = next((u for u in users if u['id'] == user_id), None)
+    if not user or not user.get('is_admin'):
+        return jsonify([]), 403
+    return jsonify(flight_reports)
 
-# Özel Rota Atama (Sadece FLYOUR001)
 @app.route('/api/admin/assign-route', methods=['POST'])
 def assign_route():
-    if session.get('pilot_id') != 'FLYOUR001' and not session.get('is_admin'):
+    user_id = session.get('user_id')
+    user = next((u for u in users if u['id'] == user_id), None)
+    if not user or not user.get('is_admin'):
         return jsonify({'status': 'error', 'message': 'Yetkisiz erişim!'}), 403
 
     data = request.json
-    flight_number = data.get('flight_number')
-    departure = data.get('departure', '').upper()
-    arrival = data.get('arrival', '').upper()
-    aircraft = data.get('aircraft')
-    assigned_pilot_id = data.get('pilot_id', '').upper()
+    new_route = {
+        "id": len(routes) + 101,
+        "assigned_pilot_id": data.get('pilot_id').upper(),
+        "flight_number": data.get('flight_number'),
+        "departure": data.get('departure'),
+        "arrival": data.get('arrival'),
+        "aircraft": data.get('aircraft')
+    }
+    routes.append(new_route)
+    return jsonify({'status': 'success', 'message': 'Rota pilatın paneline başarıyla atandı!'})
 
-    conn = get_db()
-    c = conn.cursor()
-    query = 'INSERT INTO routes (flight_number, departure, arrival, aircraft, assigned_pilot_id) VALUES (%s, %s, %s, %s, %s)' if DATABASE_URL else 'INSERT INTO routes (flight_number, departure, arrival, aircraft, assigned_pilot_id) VALUES (?, ?, ?, ?, ?)'
-    c.execute(query, (flight_number, departure, arrival, aircraft, assigned_pilot_id))
-    conn.commit()
-    conn.close()
-    return jsonify({'status': 'success', 'message': f'{assigned_pilot_id} idli pilota rota tanımlandı!'})
-
-# Ödül / Rozet Tanımlama (Sadece FLYOUR001)
 @app.route('/api/admin/give-award', methods=['POST'])
 def give_award():
-    if session.get('pilot_id') != 'FLYOUR001' and not session.get('is_admin'):
+    user_id = session.get('user_id')
+    user = next((u for u in users if u['id'] == user_id), None)
+    if not user or not user.get('is_admin'):
         return jsonify({'status': 'error', 'message': 'Yetkisiz erişim!'}), 403
 
     data = request.json
-    pilot_id = data.get('pilot_id', '').upper()
-    title = data.get('title')
-    description = data.get('description')
-    badge_icon = data.get('badge_icon', '🏆')
+    new_award = {
+        "pilot_id": data.get('pilot_id').upper(),
+        "badge_icon": "🏆",
+        "title": data.get('title'),
+        "description": data.get('description')
+    }
+    achievements.append(new_award)
+    return jsonify({'status': 'success', 'message': 'Ödül pilota tanımlandı!'})
 
-    conn = get_db()
-    c = conn.cursor()
-    query = 'INSERT INTO achievements (pilot_id, title, description, badge_icon) VALUES (%s, %s, %s, %s)' if DATABASE_URL else 'INSERT INTO achievements (pilot_id, title, description, badge_icon) VALUES (?, ?, ?, ?)'
-    c.execute(query, (pilot_id, title, description, badge_icon))
-    conn.commit()
-    conn.close()
-    return jsonify({'status': 'success', 'message': f'{pilot_id} idli pilota ödül tanımlandı!'})
+# ---------------------------------------------------------
+# UYGULAMAYI BAŞLATMA
+# ---------------------------------------------------------
 
 if __name__ == '__main__':
     app.run(debug=True)
