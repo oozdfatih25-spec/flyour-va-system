@@ -3,19 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flyour Virtual Airways - Pilot Paneli</title>
+    <title>Flyour Virtual Airlines - Pilot Paneli</title>
+    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #0f172a; color: #f8fafc !important; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .card-custom { background: #1e293b; border: 1px solid #334155; border-radius: 12px; color: #f8fafc; }
-        .navbar-custom { background: #1e293b; border-bottom: 1px solid #334155; }
-        .btn-flyour { background-color: #0284c7; color: white; }
-        .btn-flyour:hover { background-color: #0369a1; color: white; }
-        .badge-rank { background-color: #38bdf8; color: #0f172a; font-weight: bold; }
+        body { 
+            background-color: #0f172a; 
+            color: #f8fafc !important; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
+        .card-custom { 
+            background: #1e293b; 
+            border: 1px solid #334155; 
+            border-radius: 12px; 
+            color: #f8fafc; 
+        }
+        .navbar-custom { 
+            background: #1e293b; 
+            border-bottom: 1px solid #334155; 
+        }
+        .btn-flyour { 
+            background-color: #0284c7; 
+            color: white; 
+        }
+        .btn-flyour:hover { 
+            background-color: #0369a1; 
+            color: white; 
+        }
+        .badge-rank { 
+            background-color: #38bdf8; 
+            color: #0f172a; 
+            font-weight: bold; 
+        }
         
-        label, .form-label, h1, h2, h3, h4, h5, h6, p, span, div, li, small { color: #f8fafc !important; }
-        .text-muted { color: #94a3b8 !important; }
+        label, .form-label, h1, h2, h3, h4, h5, h6, p, span, div, li, small { 
+            color: #f8fafc !important; 
+        }
+        .text-muted { 
+            color: #94a3b8 !important; 
+        }
         
         .form-control {
             background-color: #0f172a !important;
@@ -28,50 +56,95 @@
             border-color: #38bdf8 !important;
             box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.25);
         }
-        input::placeholder, textarea::placeholder { color: #64748b !important; }
+        input::placeholder, textarea::placeholder { 
+            color: #64748b !important; 
+        }
 
-        .nav-tabs .nav-link { color: #94a3b8 !important; border: none !important; font-weight: bold; }
-        .nav-tabs .nav-link.active { color: #38bdf8 !important; background-color: transparent !important; border-bottom: 3px solid #38bdf8 !important; }
+        .nav-tabs .nav-link { 
+            color: #94a3b8 !important; 
+            border: none !important; 
+            font-weight: bold; 
+        }
+        .nav-tabs .nav-link.active { 
+            color: #38bdf8 !important; 
+            background-color: transparent !important; 
+            border-bottom: 3px solid #38bdf8 !important; 
+        }
+
+        /* Toast Bildirim Tasarımı */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1090;
+        }
+        .toast-custom {
+            background-color: #1e293b;
+            color: #f8fafc;
+            border: 1px solid #38bdf8;
+        }
     </style>
 </head>
 <body>
 
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom px-4">
-        <a class="navbar-brand fw-bold text-info" href="#"><i class="fa-solid fa-plane-departure me-2 text-info"></i>FLYOUR VA</a>
+        <a class="navbar-brand fw-bold text-info" href="#">
+            <i class="fa-solid fa-plane-departure me-2 text-info"></i>FLYOUR VA
+        </a>
         <div class="ms-auto" id="navAuthSection"></div>
     </nav>
 
+    <!-- TOAST BİLDİRİM KAPSAYICISI -->
+    <div class="toast-container">
+        <div id="systemToast" class="toast toast-custom align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage">
+                    İşlem başarılı.
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
     <div class="container my-5">
         
-        <!-- MİSAFİR GÖRÜNÜMÜ -->
+        <!-- MİSAFİR GÖRÜNÜMÜ (GİRİŞ / KAYIT) -->
         <div id="guestSection" class="row justify-content-center">
             <div class="col-md-5">
                 <div class="card card-custom p-4 shadow-lg">
                     <ul class="nav nav-tabs nav-justified mb-4" id="authTabs" role="tablist">
                         <li class="nav-item">
-                            <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#loginTabContent" type="button"><i class="fa-solid fa-right-to-bracket me-2"></i>Giriş Yap</button>
+                            <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#loginTabContent" type="button">
+                                <i class="fa-solid fa-right-to-bracket me-2"></i>Giriş Yap
+                            </button>
                         </li>
                         <li class="nav-item">
-                            <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#registerTabContent" type="button"><i class="fa-solid fa-user-plus me-2"></i>Kayıt Ol</button>
+                            <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#registerTabContent" type="button">
+                                <i class="fa-solid fa-user-plus me-2"></i>Kayıt Ol
+                            </button>
                         </li>
                     </ul>
 
                     <div class="tab-content" id="authTabsContent">
+                        <!-- GİRİŞ FORMU -->
                         <div class="tab-pane fade show active" id="loginTabContent">
                             <form id="loginForm">
                                 <div class="mb-3">
                                     <label class="form-label">Pilot ID</label>
-                                    <input type="text" id="loginPilotId" class="form-control" placeholder="Örn: FLYOUR001" required>
+                                    <input type="text" id="loginPilotId" class="form-control text-uppercase" placeholder="Örn: FLYOUR001" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Şifre</label>
                                     <input type="password" id="loginPassword" class="form-control" placeholder="Şifreniz" required>
                                 </div>
-                                <button type="submit" class="btn btn-flyour w-100 fw-bold">Giriş Yap</button>
+                                <button type="submit" class="btn btn-flyour w-100 fw-bold">
+                                    <i class="fa-solid fa-sign-in-alt me-1"></i> Giriş Yap
+                                </button>
                             </form>
                         </div>
 
+                        <!-- KAYIT FORMU -->
                         <div class="tab-pane fade" id="registerTabContent">
                             <form id="registerForm">
                                 <div class="mb-3">
@@ -84,13 +157,15 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">İstediğiniz Pilot ID</label>
-                                    <input type="text" id="regPilotId" class="form-control" placeholder="Örn: FLYOUR002" required>
+                                    <input type="text" id="regPilotId" class="form-control text-uppercase" placeholder="Örn: FLYOUR002" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Şifre</label>
                                     <input type="password" id="regPassword" class="form-control" placeholder="Şifreniz" required>
                                 </div>
-                                <button type="submit" class="btn btn-success w-100 fw-bold"><i class="fa-solid fa-user-check me-2"></i>Kayıt Ol</button>
+                                <button type="submit" class="btn btn-success w-100 fw-bold">
+                                    <i class="fa-solid fa-user-check me-2"></i>Kayıt Ol
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -113,7 +188,9 @@
                         </div>
 
                         <div class="text-end">
-                            <span class="badge bg-outline-info text-info border border-info px-3 py-2 fw-bold"><i class="fa-solid fa-id-card me-2"></i>Aktif Lisanslı Pilot</span>
+                            <span class="badge bg-outline-info text-info border border-info px-3 py-2 fw-bold">
+                                <i class="fa-solid fa-id-card me-2"></i>Aktif Lisanslı Pilot
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -131,33 +208,56 @@
                             <input type="hidden" id="selectedRouteId" value="">
                             <div class="mb-3">
                                 <label class="form-label">Uçuş Kodu</label>
-                                <input type="text" id="repFlightNum" class="form-control" placeholder="Örn: FO101" required>
+                                <input type="text" id="repFlightNum" class="form-control text-uppercase" placeholder="Örn: FO101" required>
                             </div>
                             <div class="row">
                                 <div class="col-6 mb-3">
                                     <label class="form-label">Kalkış (ICAO)</label>
-                                    <input type="text" id="repDep" class="form-control" placeholder="Örn: LTFM" required>
+                                    <input type="text" id="repDep" class="form-control text-uppercase" maxlength="4" placeholder="Örn: LTFM" required>
                                 </div>
                                 <div class="col-6 mb-3">
                                     <label class="form-label">Varış (ICAO)</label>
-                                    <input type="text" id="repArr" class="form-control" placeholder="Örn: LTAI" required>
+                                    <input type="text" id="repArr" class="form-control text-uppercase" maxlength="4" placeholder="Örn: LTAI" required>
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Uçuş Süresi (Saat)</label>
-                                <input type="number" step="0.1" id="repTime" class="form-control" placeholder="Örn: 1.5" required>
+                                <input type="number" step="0.1" min="0.1" id="repTime" class="form-control" placeholder="Örn: 1.5" required>
                             </div>
-                            <button type="submit" class="btn btn-success w-100 fw-bold"><i class="fa-solid fa-paper-plane me-2"></i>Raporu Gönder & Saati İşle</button>
+                            <button type="submit" class="btn btn-success w-100 fw-bold">
+                                <i class="fa-solid fa-paper-plane me-2"></i>Raporu Gönder & Saati İşle
+                            </button>
                         </form>
                     </div>
 
                     <!-- ATANAN ROTALAR -->
-                    <div class="card card-custom p-4">
+                    <div class="card card-custom p-4 mb-4">
                         <h5 class="text-warning"><i class="fa-solid fa-route me-2"></i>Bana Atanan Görev / Rotalar</h5>
                         <hr class="border-secondary">
                         <ul class="list-group list-group-flush bg-transparent" id="myRoutesList">
                             <li class="list-group-item bg-transparent text-muted">Atanmış aktif görev bulunmuyor.</li>
                         </ul>
+                    </div>
+
+                    <!-- SON UÇUŞLARIM (GEÇMİŞ RAPORLAR) -->
+                    <div class="card card-custom p-4">
+                        <h5 class="text-info"><i class="fa-solid fa-history me-2"></i>Son Uçuş Kayıtlarım</h5>
+                        <hr class="border-secondary">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-striped align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Uçuş</th>
+                                        <th>Parkur</th>
+                                        <th>Süre</th>
+                                        <th>Durum</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="myFlightHistoryTable">
+                                    <tr><td colspan="4" class="text-muted text-center">Geçmiş uçuş kaydı bulunamadı.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
@@ -168,7 +268,7 @@
                     <div class="card card-custom p-4 mb-4 border-info">
                         <h5 class="text-info mb-3"><i class="fa-solid fa-bullhorn me-2"></i>Duyurular & Şirket Haberleri</h5>
                         <hr class="border-secondary mt-0">
-                        <div id="announcementsList" style="max-height: 300px; overflow-y: auto;">
+                        <div id="announcementsList" style="max-height: 350px; overflow-y: auto;">
                             <span class="text-muted">Henüz duyuru yayınlanmadı.</span>
                         </div>
                     </div>
@@ -233,17 +333,17 @@
                                 <h6><i class="fa-solid fa-plus-circle me-2 text-warning"></i>Pilota Rota Atama</h6>
                                 <form id="adminAssignRouteForm">
                                     <div class="mb-2">
-                                        <input type="text" id="admPilotId" class="form-control" placeholder="Hedef Pilot ID (Örn: FLYOUR002)" required>
+                                        <input type="text" id="admPilotId" class="form-control text-uppercase" placeholder="Hedef Pilot ID (Örn: FLYOUR002)" required>
                                     </div>
                                     <div class="mb-2">
-                                        <input type="text" id="admFlightNum" class="form-control" placeholder="Uçuş Kodu (Örn: FO202)" required>
+                                        <input type="text" id="admFlightNum" class="form-control text-uppercase" placeholder="Uçuş Kodu (Örn: FO202)" required>
                                     </div>
                                     <div class="row g-2 mb-2">
-                                        <div class="col-6"><input type="text" id="admDep" class="form-control" placeholder="Kalkış (LTFM)" required></div>
-                                        <div class="col-6"><input type="text" id="admArr" class="form-control" placeholder="Varış (LTBJ)" required></div>
+                                        <div class="col-6"><input type="text" id="admDep" class="form-control text-uppercase" maxlength="4" placeholder="Kalkış (LTFM)" required></div>
+                                        <div class="col-6"><input type="text" id="admArr" class="form-control text-uppercase" maxlength="4" placeholder="Varış (LTBJ)" required></div>
                                     </div>
                                     <div class="mb-2">
-                                        <input type="text" id="admAircraft" class="form-control" placeholder="Uçak Tipi (A320 / B738)" required>
+                                        <input type="text" id="admAircraft" class="form-control text-uppercase" placeholder="Uçak Tipi (A320 / B738)" required>
                                     </div>
                                     <button type="submit" class="btn btn-warning w-100 fw-bold">Rotayı Pilota Atayınız</button>
                                 </form>
@@ -254,7 +354,7 @@
                                 <h6><i class="fa-solid fa-award me-2 text-warning"></i>Pilota Rozet / Ödül Verme</h6>
                                 <form id="adminGiveAwardForm">
                                     <div class="mb-2">
-                                        <input type="text" id="admAwardPilotId" class="form-control" placeholder="Hedef Pilot ID" required>
+                                        <input type="text" id="admAwardPilotId" class="form-control text-uppercase" placeholder="Hedef Pilot ID" required>
                                     </div>
                                     <div class="mb-2">
                                         <input type="text" id="admAwardTitle" class="form-control" placeholder="Ödül Başlığı (Örn: Gece Kuşu)" required>
@@ -275,9 +375,28 @@
 
     </div>
 
+    <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', checkAuth);
+
+        // Toast Bildirim Fonksiyonu
+        function showNotification(message, isError = false) {
+            const toastEl = document.getElementById('systemToast');
+            const toastMsg = document.getElementById('toastMessage');
+            toastMsg.innerText = message;
+            
+            if (isError) {
+                toastEl.classList.add('border-danger');
+                toastEl.classList.remove('border-info');
+            } else {
+                toastEl.classList.add('border-info');
+                toastEl.classList.remove('border-danger');
+            }
+
+            const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+            toast.show();
+        }
 
         function checkAuth() {
             fetch('/api/check-auth')
@@ -290,7 +409,7 @@
                         document.getElementById('userName').innerText = data.user.name;
                         document.getElementById('userPilotId').innerText = data.user.pilot_id;
                         document.getElementById('userRank').innerText = data.user.rank;
-                        document.getElementById('userFlightHours').innerText = data.user.flight_hours.toFixed(1);
+                        document.getElementById('userFlightHours').innerText = Number(data.user.flight_hours).toFixed(1);
 
                         document.getElementById('navAuthSection').innerHTML = `
                             <span class="text-light me-3">Hoş geldin, <b>${data.user.name}</b></span>
@@ -303,17 +422,21 @@
                             adminPanel.classList.remove('d-none');
                             loadAdminReports();
                         } else {
-                            adminPanel.classList.add('d-none'); // Sıradan kullanıcıda gizle
+                            adminPanel.classList.add('d-none');
                         }
 
                         loadAnnouncements();
                         loadMyRoutes();
                         loadMyAchievements();
+                        loadMyFlightHistory();
                     } else {
                         document.getElementById('guestSection').classList.remove('d-none');
                         document.getElementById('userDashboard').classList.add('d-none');
                         document.getElementById('navAuthSection').innerHTML = '';
                     }
+                })
+                .catch(() => {
+                    showNotification("Sunucuyla bağlantı kurulamadı.", true);
                 });
         }
 
@@ -350,7 +473,7 @@
             })
             .then(res => res.json())
             .then(data => {
-                alert(data.message);
+                showNotification(data.message, data.status !== 'success');
                 if (data.status === 'success') {
                     this.reset();
                     loadAnnouncements();
@@ -404,7 +527,7 @@
             })
             .then(res => res.json())
             .then(data => {
-                alert(data.message);
+                showNotification(data.message, data.status !== 'success');
                 if (data.status === 'success') {
                     checkAuth();
                     this.reset();
@@ -412,6 +535,29 @@
                 }
             });
         });
+
+        function loadMyFlightHistory() {
+            fetch('/api/my-flights')
+                .then(res => res.json())
+                .then(flights => {
+                    const tbody = document.getElementById('myFlightHistoryTable');
+                    if (!flights || flights.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" class="text-muted text-center">Geçmiş uçuş kaydı bulunamadı.</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = flights.map(f => `
+                        <tr>
+                            <td><b class="text-info">${f.flight_number}</b></td>
+                            <td>${f.departure} ➔ ${f.arrival}</td>
+                            <td>${f.flight_time} Sa</td>
+                            <td><span class="badge bg-success">Onaylandı</span></td>
+                        </tr>
+                    `).join('');
+                })
+                .catch(() => {
+                    // Endpoint henüz tanımlanmadıysa tablo varsayılan kalır
+                });
+        }
 
         function loadAdminReports() {
             fetch('/api/admin/reports')
@@ -445,8 +591,12 @@
             })
             .then(res => res.json())
             .then(data => {
-                if (data.status === 'success') checkAuth();
-                else alert(data.message);
+                if (data.status === 'success') {
+                    showNotification("Giriş başarılı!");
+                    checkAuth();
+                } else {
+                    showNotification(data.message, true);
+                }
             });
         });
 
@@ -464,7 +614,7 @@
             })
             .then(res => res.json())
             .then(data => {
-                alert(data.message);
+                showNotification(data.message, data.status !== 'success');
                 if (data.status === 'success') {
                     new bootstrap.Tab(document.getElementById('login-tab')).show();
                     this.reset();
@@ -487,7 +637,7 @@
             })
             .then(res => res.json())
             .then(data => {
-                alert(data.message);
+                showNotification(data.message, data.status !== 'success');
                 if(data.status === 'success') this.reset();
             });
         });
@@ -505,7 +655,7 @@
             })
             .then(res => res.json())
             .then(data => {
-                alert(data.message);
+                showNotification(data.message, data.status !== 'success');
                 if(data.status === 'success') this.reset();
             });
         });
@@ -520,8 +670,8 @@
                         return;
                     }
                     box.innerHTML = ach.map(a => `
-                        <div class="p-2 card-custom border-secondary rounded text-center">
-                            <div style="font-size: 1.5rem;">${a.badge_icon}</div>
+                        <div class="p-2 card-custom border-secondary rounded text-center" style="min-width: 110px;">
+                            <div style="font-size: 1.5rem;">${a.badge_icon || '🏆'}</div>
                             <small class="fw-bold d-block text-warning">${a.title}</small>
                             <small class="text-muted" style="font-size:0.75rem;">${a.description}</small>
                         </div>
@@ -530,7 +680,10 @@
         }
 
         function logout() {
-            fetch('/api/logout', { method: 'POST' }).then(() => checkAuth());
+            fetch('/api/logout', { method: 'POST' }).then(() => {
+                showNotification("Çıkış yapıldı.");
+                checkAuth();
+            });
         }
     </script>
 </body>
