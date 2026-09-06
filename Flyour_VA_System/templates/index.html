@@ -14,11 +14,9 @@
         .btn-flyour:hover { background-color: #0369a1; color: white; }
         .badge-rank { background-color: #38bdf8; color: #0f172a; font-weight: bold; }
         
-        /* Tüm metinleri net beyaz yapma */
         label, .form-label, h1, h2, h3, h4, h5, h6, p, span, div, li, small { color: #f8fafc !important; }
         .text-muted { color: #94a3b8 !important; }
         
-        /* Form Kutuları Renk Düzeltmeleri */
         .form-control {
             background-color: #0f172a !important;
             color: #ffffff !important;
@@ -30,21 +28,10 @@
             border-color: #38bdf8 !important;
             box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.25);
         }
-        input::placeholder {
-            color: #64748b !important;
-        }
+        input::placeholder { color: #64748b !important; }
 
-        /* Tab Menü Stili */
-        .nav-tabs .nav-link {
-            color: #94a3b8 !important;
-            border: none !important;
-            font-weight: bold;
-        }
-        .nav-tabs .nav-link.active {
-            color: #38bdf8 !important;
-            background-color: transparent !important;
-            border-bottom: 3px solid #38bdf8 !important;
-        }
+        .nav-tabs .nav-link { color: #94a3b8 !important; border: none !important; font-weight: bold; }
+        .nav-tabs .nav-link.active { color: #38bdf8 !important; background-color: transparent !important; border-bottom: 3px solid #38bdf8 !important; }
     </style>
 </head>
 <body>
@@ -52,31 +39,26 @@
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom px-4">
         <a class="navbar-brand fw-bold text-info" href="#"><i class="fa-solid fa-plane-departure me-2 text-info"></i>FLYOUR VA</a>
-        <div class="ms-auto" id="navAuthSection">
-            <!-- JS ile dinamik dolacak -->
-        </div>
+        <div class="ms-auto" id="navAuthSection"></div>
     </nav>
 
     <div class="container my-5">
         
-        <!-- MİSAFİR GÖRÜNÜMÜ (GİRİŞ / KAYIT TABLARI) -->
+        <!-- MİSAFİR GÖRÜNÜMÜ -->
         <div id="guestSection" class="row justify-content-center">
             <div class="col-md-5">
                 <div class="card card-custom p-4 shadow-lg">
-                    
-                    <!-- TAB BAŞLIKLARI -->
                     <ul class="nav nav-tabs nav-justified mb-4" id="authTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#loginTabContent" type="button" role="tab"><i class="fa-solid fa-right-to-bracket me-2"></i>Giriş Yap</button>
+                        <li class="nav-item">
+                            <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#loginTabContent" type="button"><i class="fa-solid fa-right-to-bracket me-2"></i>Giriş Yap</button>
                         </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#registerTabContent" type="button" role="tab"><i class="fa-solid fa-user-plus me-2"></i>Kayıt Ol</button>
+                        <li class="nav-item">
+                            <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#registerTabContent" type="button"><i class="fa-solid fa-user-plus me-2"></i>Kayıt Ol</button>
                         </li>
                     </ul>
 
                     <div class="tab-content" id="authTabsContent">
-                        <!-- GİRİŞ FORMU -->
-                        <div class="tab-pane fade show active" id="loginTabContent" role="tabpanel">
+                        <div class="tab-pane fade show active" id="loginTabContent">
                             <form id="loginForm">
                                 <div class="mb-3">
                                     <label class="form-label">Pilot ID</label>
@@ -90,8 +72,7 @@
                             </form>
                         </div>
 
-                        <!-- KAYIT FORMU -->
-                        <div class="tab-pane fade" id="registerTabContent" role="tabpanel">
+                        <div class="tab-pane fade" id="registerTabContent">
                             <form id="registerForm">
                                 <div class="mb-3">
                                     <label class="form-label">Ad Soyad</label>
@@ -113,25 +94,26 @@
                             </form>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
 
-        <!-- PİLOT PANELİ (OTURUM AÇILINCA GÖRÜNÜR) -->
+        <!-- PİLOT PANELİ -->
         <div id="userDashboard" class="d-none">
             
             <!-- PROFİL ÖZETİ -->
             <div class="row mb-4">
                 <div class="col-md-12">
-                    <div class="card card-custom p-4 d-flex flex-row align-items-center justify-content-between">
+                    <div class="card card-custom p-4 d-flex flex-row align-items-center justify-content-between position-relative overflow-hidden">
                         <div>
                             <h3 class="mb-1 text-info" id="userName">--</h3>
-                            <p class="text-muted mb-0">Pilot ID: <span class="text-info fw-bold" id="userPilotId">--</span> | Rütbe: <span class="badge badge-rank" id="userRank">--</span></p>
-                        </div>
-                        <div class="text-end">
+                            <p class="text-muted mb-2">Pilot ID: <span class="text-info fw-bold" id="userPilotId">--</span> | Rütbe: <span class="badge badge-rank" id="userRank">--</span></p>
                             <h2 class="text-warning mb-0"><i class="fa-solid fa-clock me-2"></i><span id="userFlightHours">0.0</span> Sa</h2>
                             <small class="text-muted">Toplam Uçuş Saati</small>
+                        </div>
+
+                        <div class="text-end">
+                            <span class="badge bg-outline-info text-info border border-info px-3 py-2 fw-bold"><i class="fa-solid fa-id-card me-2"></i>Aktif Lisanslı Pilot</span>
                         </div>
                     </div>
                 </div>
@@ -139,12 +121,13 @@
 
             <div class="row g-4">
                 
-                <!-- 1. UÇUŞ RAPORLAMA (UÇUŞ SAATİ OTOMATİK EKLENİR) -->
+                <!-- 1. UÇUŞ RAPORLAMA FORM -->
                 <div class="col-md-6">
                     <div class="card card-custom p-4 h-100">
                         <h5 class="text-info"><i class="fa-solid fa-file-signature me-2"></i>Uçuş Raporla (PIREP)</h5>
                         <hr class="border-secondary">
                         <form id="flightReportForm">
+                            <input type="hidden" id="selectedRouteId" value="">
                             <div class="mb-3">
                                 <label class="form-label">Uçuş Kodu</label>
                                 <input type="text" id="repFlightNum" class="form-control" placeholder="Örn: FO101" required>
@@ -168,13 +151,24 @@
                     </div>
                 </div>
 
-                <!-- 2. BANA ATANAN ROTALAR VE ÖDÜLLERİM -->
+                <!-- 2. BANA ATANAN ROTALAR VE KARTIM BÖLÜMÜ -->
                 <div class="col-md-6">
+                    
+                    <!-- ÖZEL KARTIM BÖLÜMÜ -->
+                    <div class="card card-custom p-4 mb-4 text-center border-info">
+                        <h5 class="text-info mb-3 text-start"><i class="fa-solid fa-address-card me-2"></i>Pilot Üyelik Kartım</h5>
+                        <div class="d-flex justify-content-center align-items-center py-2">
+                            <img id="pilotCardImage" src="/static/cards/student.png" alt="Pilot Kartı" style="max-width: 280px; width: 100%; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.6); border: 1px solid #475569;">
+                        </div>
+                        <small class="text-muted mt-2 d-block" id="cardStatusText">Uçuş saatiniz arttıkça kart seviyeniz yükselecektir.</small>
+                    </div>
+
+                    <!-- ATANAN ROTALAR -->
                     <div class="card card-custom p-4 mb-4">
                         <h5 class="text-warning"><i class="fa-solid fa-route me-2"></i>Bana Atanan Görev / Rotalar</h5>
                         <hr class="border-secondary">
                         <ul class="list-group list-group-flush bg-transparent" id="myRoutesList">
-                            <li class="list-group-item bg-transparent text-muted">Atanmış rota bulunmuyor.</li>
+                            <li class="list-group-item bg-transparent text-muted">Atanmış aktif görev bulunmuyor.</li>
                         </ul>
                     </div>
 
@@ -189,13 +183,34 @@
 
             </div>
 
-            <!-- 3. YÖNETİCİ (ADMIN) ÖZEL PANELİ - SADECE FLYOUR001 GÖRÜR -->
+            <!-- 3. YÖNETİCİ (ADMIN) PANELİ (FLYOUR001) -->
             <div id="adminPanel" class="row mt-5 d-none">
                 <div class="col-md-12">
                     <div class="card card-custom p-4 border-warning">
-                        <h4 class="text-warning"><i class="fa-solid fa-user-shield me-2"></i>Yönetici Paneli (FLYOUR001)</h4>
-                        <hr class="border-secondary">
+                        <h4 class="text-warning mb-4"><i class="fa-solid fa-user-shield me-2"></i>Yönetici Paneli (FLYOUR001)</h4>
                         
+                        <!-- GELEN UÇUŞ RAPORLARI TABLOSU -->
+                        <div class="mb-4">
+                            <h6><i class="fa-solid fa-list-check me-2 text-info"></i>Gelen Uçuş Raporları (PIREP)</h6>
+                            <div class="table-responsive">
+                                <table class="table table-dark table-striped align-middle mt-2">
+                                    <thead>
+                                        <tr>
+                                            <th>Pilot</th>
+                                            <th>Uçuş Kodu</th>
+                                            <th>Parkur</th>
+                                            <th>Süre</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminReportsTable">
+                                        <tr><td colspan="4" class="text-muted text-center">Henüz raporlanmış uçuş yok.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <hr class="border-secondary my-4">
+
                         <div class="row g-4">
                             <!-- ROTA ATAMA FORMU -->
                             <div class="col-md-6">
@@ -223,13 +238,13 @@
                                 <h6><i class="fa-solid fa-award me-2 text-warning"></i>Pilota Rozet / Ödül Verme</h6>
                                 <form id="adminGiveAwardForm">
                                     <div class="mb-2">
-                                        <input type="text" id="admAwardPilotId" class="form-control" placeholder="Hedef Pilot ID (Örn: FLYOUR002)" required>
+                                        <input type="text" id="admAwardPilotId" class="form-control" placeholder="Hedef Pilot ID" required>
                                     </div>
                                     <div class="mb-2">
                                         <input type="text" id="admAwardTitle" class="form-control" placeholder="Ödül Başlığı (Örn: Gece Kuşu)" required>
                                     </div>
                                     <div class="mb-2">
-                                        <input type="text" id="admAwardDesc" class="form-control" placeholder="Açıklama (Örn: 10 Gece uçuşu tamamlandı)" required>
+                                        <input type="text" id="admAwardDesc" class="form-control" placeholder="Açıklama" required>
                                     </div>
                                     <button type="submit" class="btn btn-warning w-100 fw-bold">Ödülü Tanımla</button>
                                 </form>
@@ -246,7 +261,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Sayfa Yüklenince Oturum Kontrolü
         document.addEventListener('DOMContentLoaded', checkAuth);
 
         function checkAuth() {
@@ -257,24 +271,40 @@
                         document.getElementById('guestSection').classList.add('d-none');
                         document.getElementById('userDashboard').classList.remove('d-none');
                         
-                        // Bilgileri Doldur
                         document.getElementById('userName').innerText = data.user.name;
                         document.getElementById('userPilotId').innerText = data.user.pilot_id;
                         document.getElementById('userRank').innerText = data.user.rank;
                         document.getElementById('userFlightHours').innerText = data.user.flight_hours.toFixed(1);
 
-                        // Navbar Butonu
+                        // UÇUŞ SAATİNE GÖRE KART GÖRSELİNİ VE YAZIYI DEĞİŞTİRME
+                        const hours = data.user.flight_hours;
+                        const cardImg = document.getElementById('pilotCardImage');
+                        const cardStatus = document.getElementById('cardStatusText');
+
+                        if (hours >= 250) {
+                            cardImg.src = '/static/cards/platinum.png';
+                            cardStatus.innerText = 'Tebrikler! En yüksek üyelik seviyesi olan Platinum Card sahibisiniz.';
+                        } else if (hours >= 100) {
+                            cardImg.src = '/static/cards/gold.png';
+                            cardStatus.innerText = 'Gold Card Seviyesi (Platinum Seviye için 250 Saat Gerekli)';
+                        } else if (hours >= 50) {
+                            cardImg.src = '/static/cards/silver.png';
+                            cardStatus.innerText = 'Silver Card Seviyesi (Gold Seviye için 100 Saat Gerekli)';
+                        } else {
+                            cardImg.src = '/static/cards/student.png';
+                            cardStatus.innerText = 'Student Card Seviyesi (Silver Seviye için 50 Saat Gerekli)';
+                        }
+
                         document.getElementById('navAuthSection').innerHTML = `
                             <span class="text-light me-3">Hoş geldin, <b>${data.user.name}</b></span>
                             <button onclick="logout()" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-power-off me-1"></i>Çıkış</button>
                         `;
 
-                        // Adminse Admin Panelini Aç
                         if(data.user.is_admin) {
                             document.getElementById('adminPanel').classList.remove('d-none');
+                            loadAdminReports();
                         }
 
-                        // Verileri Yükle
                         loadMyRoutes();
                         loadMyAchievements();
                     } else {
@@ -285,117 +315,120 @@
                 });
         }
 
-        // Giriş Yapma
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const pilot_id = document.getElementById('loginPilotId').value;
-            const password = document.getElementById('loginPassword').value;
-
-            fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pilot_id, password })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    checkAuth();
-                } else {
-                    alert(data.message);
-                }
-            });
-        });
-
-        // Kayıt Olma
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const name = document.getElementById('regName').value;
-            const email = document.getElementById('regEmail').value;
-            const pilot_id = document.getElementById('regPilotId').value;
-            const password = document.getElementById('regPassword').value;
-
-            fetch('/api/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, pilot_id, password })
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message);
-                if (data.status === 'success') {
-                    // Kayıt başarılı olunca giriş sekmesine yönlendir
-                    const loginTab = new bootstrap.Tab(document.getElementById('login-tab'));
-                    loginTab.show();
-                    this.reset();
-                }
-            });
-        });
-
-        // Uçuş Raporlama (Saat Otomatik Ekleme)
-        document.getElementById('flightReportForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const flight_number = document.getElementById('repFlightNum').value;
-            const departure = document.getElementById('repDep').value;
-            const arrival = document.getElementById('repArr').value;
-            const flight_time = document.getElementById('repTime').value;
-
-            fetch('/api/submit-flight', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ flight_number, departure, arrival, flight_time })
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message);
-                if (data.status === 'success') {
-                    checkAuth(); // Saati ekranda güncelle
-                    this.reset();
-                }
-            });
-        });
-
-        // Bana Atanan Rotaları Çek
         function loadMyRoutes() {
             fetch('/api/my-routes')
                 .then(res => res.json())
                 .then(routes => {
                     const list = document.getElementById('myRoutesList');
                     if (!routes || routes.length === 0) {
-                        list.innerHTML = '<li class="list-group-item bg-transparent text-muted">Bana atanan aktif rota bulunmuyor.</li>';
+                        list.innerHTML = '<li class="list-group-item bg-transparent text-muted">Bana atanan aktif görev bulunmuyor.</li>';
                         return;
                     }
                     list.innerHTML = routes.map(r => `
                         <li class="list-group-item bg-transparent text-light border-secondary d-flex justify-content-between align-items-center">
                             <div>
                                 <b class="text-info">${r.flight_number}</b>: ${r.departure} ➔ ${r.arrival}
+                                <small class="d-block text-muted">Uçak: ${r.aircraft}</small>
                             </div>
-                            <span class="badge bg-secondary">${r.aircraft}</span>
+                            <button onclick="fillReportForm('${r.id}', '${r.flight_number}', '${r.departure}', '${r.arrival}')" class="btn btn-sm btn-outline-success">
+                                <i class="fa-solid fa-paper-plane me-1"></i>Raporla
+                            </button>
                         </li>
                     `).join('');
                 });
         }
 
-        // Başarıları / Ödülleri Çek
-        function loadMyAchievements() {
-            fetch('/api/my-achievements')
+        function fillReportForm(routeId, flightNum, dep, arr) {
+            document.getElementById('selectedRouteId').value = routeId;
+            document.getElementById('repFlightNum').value = flightNum;
+            document.getElementById('repDep').value = dep;
+            document.getElementById('repArr').value = arr;
+            document.getElementById('repTime').focus();
+        }
+
+        document.getElementById('flightReportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetch('/api/submit-flight', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    route_id: document.getElementById('selectedRouteId').value,
+                    flight_number: document.getElementById('repFlightNum').value,
+                    departure: document.getElementById('repDep').value,
+                    arrival: document.getElementById('repArr').value,
+                    flight_time: document.getElementById('repTime').value
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                if (data.status === 'success') {
+                    checkAuth();
+                    this.reset();
+                    document.getElementById('selectedRouteId').value = '';
+                }
+            });
+        });
+
+        function loadAdminReports() {
+            fetch('/api/admin/reports')
                 .then(res => res.json())
-                .then(ach => {
-                    const box = document.getElementById('myAchievementsList');
-                    if (!ach || ach.length === 0) {
-                        box.innerHTML = '<span class="text-muted">Henüz ödül tanımlanmadı.</span>';
+                .then(reports => {
+                    const tbody = document.getElementById('adminReportsTable');
+                    if(!reports || reports.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" class="text-muted text-center">Henüz raporlanmış uçuş yok.</td></tr>';
                         return;
                     }
-                    box.innerHTML = ach.map(a => `
-                        <div class="p-2 card-custom border-secondary rounded text-center">
-                            <div style="font-size: 1.5rem;">${a.badge_icon}</div>
-                            <small class="fw-bold d-block text-warning">${a.title}</small>
-                            <small class="text-muted" style="font-size:0.75rem;">${a.description}</small>
-                        </div>
+                    tbody.innerHTML = reports.map(rep => `
+                        <tr>
+                            <td><b>${rep.pilot_name}</b> (${rep.pilot_id})</td>
+                            <td><span class="badge bg-info text-dark">${rep.flight_number}</span></td>
+                            <td>${rep.departure} ➔ ${rep.arrival}</td>
+                            <td class="text-warning fw-bold">${rep.flight_time} Sa</td>
+                        </tr>
                     `).join('');
                 });
         }
 
-        // ADMIN: Rota Atama
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    pilot_id: document.getElementById('loginPilotId').value,
+                    password: document.getElementById('loginPassword').value
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') checkAuth();
+                else alert(data.message);
+            });
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: document.getElementById('regName').value,
+                    email: document.getElementById('regEmail').value,
+                    pilot_id: document.getElementById('regPilotId').value,
+                    password: document.getElementById('regPassword').value
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                if (data.status === 'success') {
+                    new bootstrap.Tab(document.getElementById('login-tab')).show();
+                    this.reset();
+                }
+            });
+        });
+
         document.getElementById('adminAssignRouteForm').addEventListener('submit', function(e) {
             e.preventDefault();
             fetch('/api/admin/assign-route', {
@@ -416,7 +449,6 @@
             });
         });
 
-        // ADMIN: Ödül Verme
         document.getElementById('adminGiveAwardForm').addEventListener('submit', function(e) {
             e.preventDefault();
             fetch('/api/admin/give-award', {
@@ -435,7 +467,25 @@
             });
         });
 
-        // Çıkış
+        function loadMyAchievements() {
+            fetch('/api/my-achievements')
+                .then(res => res.json())
+                .then(ach => {
+                    const box = document.getElementById('myAchievementsList');
+                    if (!ach || ach.length === 0) {
+                        box.innerHTML = '<span class="text-muted">Henüz ödül tanımlanmadı.</span>';
+                        return;
+                    }
+                    box.innerHTML = ach.map(a => `
+                        <div class="p-2 card-custom border-secondary rounded text-center">
+                            <div style="font-size: 1.5rem;">${a.badge_icon}</div>
+                            <small class="fw-bold d-block text-warning">${a.title}</small>
+                            <small class="text-muted" style="font-size:0.75rem;">${a.description}</small>
+                        </div>
+                    `).join('');
+                });
+        }
+
         function logout() {
             fetch('/api/logout', { method: 'POST' }).then(() => checkAuth());
         }
