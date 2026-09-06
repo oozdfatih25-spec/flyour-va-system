@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flyour Virtual Airways - Pilot Paneli</title>
+    <title>Flyour Virtual Airlines - Pilot Paneli</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -282,16 +282,16 @@
                         const cardStatus = document.getElementById('cardStatusText');
 
                         if (hours >= 250) {
-                            cardImg.src = '/static/cards/platinum.png';
+                            cardImg.src = '/static/cards/platinum.jpg';
                             cardStatus.innerText = 'Tebrikler! En yüksek üyelik seviyesi olan Platinum Card sahibisiniz.';
                         } else if (hours >= 100) {
-                            cardImg.src = '/static/cards/gold.png';
+                            cardImg.src = '/static/cards/gold.jpg';
                             cardStatus.innerText = 'Gold Card Seviyesi (Platinum Seviye için 250 Saat Gerekli)';
                         } else if (hours >= 50) {
-                            cardImg.src = '/static/cards/silver.png';
+                            cardImg.src = '/static/cards/silver.jpg';
                             cardStatus.innerText = 'Silver Card Seviyesi (Gold Seviye için 100 Saat Gerekli)';
                         } else {
-                            cardImg.src = '/static/cards/student.png';
+                            cardImg.src = '/static/cards/student.jpg';
                             cardStatus.innerText = 'Student Card Seviyesi (Silver Seviye için 50 Saat Gerekli)';
                         }
 
