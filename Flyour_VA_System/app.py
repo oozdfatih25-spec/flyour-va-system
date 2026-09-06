@@ -70,6 +70,33 @@ announcements = [
 def index():
     return render_template('index.html')
 
+@app.route('/briefing-room')
+def briefing_room():
+    return '''
+    <!DOCTYPE html>
+    <html lang="tr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Flyour VA - Toplantı Odası</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-dark text-white">
+        <div class="container py-4 text-center">
+            <h2 class="fw-bold">Flyour VA - Brifing & Toplantı Odası</h2>
+            <p class="text-muted">Katılmak için mikrofon ve kamera izinlerini onaylayın.</p>
+            <a href="/" class="btn btn-outline-light mb-3">← Panale Dön</a>
+            
+            <div class="ratio ratio-16x9 shadow-lg rounded overflow-hidden">
+                <iframe src="https://meet.jit.si/FlyourVABriefingRoom" 
+                        allow="camera; microphone; display-capture; autoplay" 
+                        style="border: 0;"></iframe>
+            </div>
+        </div>
+    </body>
+    </html>
+    '''
+
 @app.route('/api/check-auth', methods=['GET'])
 def check_auth():
     user_id = session.get('user_id')
