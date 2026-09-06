@@ -1,0 +1,31 @@
+<table class="table table-dark table-hover">
+    <thead>
+        <tr>
+            <th>Pilot</th>
+            <th>Rota</th>
+            <th>Planlanan Süre</th>
+            <th>Raporlanan Süre</th>
+            <th>Durum / İşlem</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Örnek PIREP Satırı -->
+        <tr>
+            <td>FATİH ÖZDEMİR (FLY001)</td>
+            <td>LTFM - LTAI</td>
+            <td>1.2 Saat</td>
+            <td>
+                <!-- Eğer planlanan ile gerçekleşen arasında 0.5 saatten fazla fark varsa kırmızı yapar -->
+                <span class="badge bg-danger">2.5 Saat (SÜRE AŞIMI!)</span>
+            </td>
+            <td>
+                <form action="/dispatcher/review-pirep/1" method="POST" class="d-flex gap-2">
+                    <!-- Dispatcher isterse süreyi düzelterek onaylar -->
+                    <input type="number" step="0.1" name="custom_flight_time" class="form-control form-control-sm" placeholder="Düzelt (Saat)">
+                    <button type="submit" name="action" value="approve" class="btn btn-sm btn-success">Onayla</button>
+                    <button type="submit" name="action" value="reject" class="btn btn-sm btn-danger">Reddet</button>
+                </form>
+            </td>
+        </tr>
+    </tbody>
+</table>
