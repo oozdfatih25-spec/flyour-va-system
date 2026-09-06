@@ -17,7 +17,7 @@ users = [
         "password": "123",
         "flight_hours": 12.5,
         "rank": "Kaptan Pilot",
-        "is_admin": True
+        "is_admin": True  # Sadece FLYOUR001 Admin!
     },
     {
         "id": 2,
@@ -27,7 +27,7 @@ users = [
         "password": "123",
         "flight_hours": 5.0,
         "rank": "İkinci Pilot",
-        "is_admin": False
+        "is_admin": False  # Normal Pilot
     }
 ]
 
@@ -84,7 +84,7 @@ def check_auth():
                     'name': user['name'],
                     'flight_hours': user['flight_hours'],
                     'rank': user['rank'],
-                    'is_admin': user['is_admin']
+                    'is_admin': user.get('is_admin', False)
                 }
             })
     return jsonify({'authenticated': False})
@@ -118,7 +118,7 @@ def register():
         "password": data.get('password'),
         "flight_hours": 0.0,
         "rank": "Öğrenci Pilot",
-        "is_admin": False
+        "is_admin": False  # Yeni kayıt olanlar ASLA admin olamaz
     }
     users.append(new_user)
     return jsonify({'status': 'success', 'message': 'Kayıt başarıyla oluşturuldu! Giriş yapabilirsiniz.'})
@@ -246,7 +246,7 @@ def assign_route():
         "aircraft": data.get('aircraft')
     }
     routes.append(new_route)
-    return jsonify({'status': 'success', 'message': 'Rota pilatın paneline başarıyla atandı!'})
+    return jsonify({'status': 'success', 'message': 'Rota pilotun paneline başarıyla atandı!'})
 
 @app.route('/api/admin/give-award', methods=['POST'])
 def give_award():
