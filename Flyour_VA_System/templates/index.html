@@ -164,7 +164,7 @@
                 <!-- SAĞ SÜTUN: DUYURULAR VE BAŞARILAR -->
                 <div class="col-md-6">
                     
-                    <!-- DUYURULAR PANOLARI -->
+                    <!-- DUYURULAR PANOSU -->
                     <div class="card card-custom p-4 mb-4 border-info">
                         <h5 class="text-info mb-3"><i class="fa-solid fa-bullhorn me-2"></i>Duyurular & Şirket Haberleri</h5>
                         <hr class="border-secondary mt-0">
@@ -185,7 +185,7 @@
 
             </div>
 
-            <!-- YÖNETİCİ (ADMIN) PANELİ -->
+            <!-- YÖNETİCİ (ADMIN) PANELİ (SADECE ADMİNLER GÖRÜR) -->
             <div id="adminPanel" class="row mt-5 d-none">
                 <div class="col-md-12">
                     <div class="card card-custom p-4 border-warning">
@@ -297,9 +297,13 @@
                             <button onclick="logout()" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-power-off me-1"></i>Çıkış</button>
                         `;
 
-                        if(data.user.is_admin) {
-                            document.getElementById('adminPanel').classList.remove('d-none');
+                        // KESİN YÖNETİCİ KONTROLÜ
+                        const adminPanel = document.getElementById('adminPanel');
+                        if (data.user.is_admin === true) {
+                            adminPanel.classList.remove('d-none');
                             loadAdminReports();
+                        } else {
+                            adminPanel.classList.add('d-none'); // Sıradan kullanıcıda gizle
                         }
 
                         loadAnnouncements();
