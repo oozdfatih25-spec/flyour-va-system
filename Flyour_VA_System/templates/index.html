@@ -44,7 +44,7 @@
 
     <div class="container my-5">
         
-        <!-- MİSAFİR GÖRÜNÜMÜ -->
+        <!-- MİSAFİR GÖRÜNÜMÜ (GİRİŞ / KAYIT) -->
         <div id="guestSection" class="row justify-content-center">
             <div class="col-md-5">
                 <div class="card card-custom p-4 shadow-lg">
@@ -98,7 +98,7 @@
             </div>
         </div>
 
-        <!-- PİLOT PANELİ -->
+        <!-- PİLOT PANELİ (OTURUM AÇILINCA) -->
         <div id="userDashboard" class="d-none">
             
             <!-- PROFİL ÖZETİ -->
@@ -158,7 +158,8 @@
                     <div class="card card-custom p-4 mb-4 text-center border-info">
                         <h5 class="text-info mb-3 text-start"><i class="fa-solid fa-address-card me-2"></i>Pilot Üyelik Kartım</h5>
                         <div class="d-flex justify-content-center align-items-center py-2">
-                            <img id="pilotCardImage" src="/static/cards/student.png" alt="Pilot Kartı" style="max-width: 280px; width: 100%; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.6); border: 1px solid #475569;">
+                            <!-- FLASK URL_FOR YAPISI İLE YÜKLEME -->
+                            <img id="pilotCardImage" src="{{ url_for('static', filename='cards/student.jpg') }}" alt="Pilot Kartı" style="max-width: 280px; width: 100%; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.6); border: 1px solid #475569;">
                         </div>
                         <small class="text-muted mt-2 d-block" id="cardStatusText">Uçuş saatiniz arttıkça kart seviyeniz yükselecektir.</small>
                     </div>
@@ -276,11 +277,12 @@
                         document.getElementById('userRank').innerText = data.user.rank;
                         document.getElementById('userFlightHours').innerText = data.user.flight_hours.toFixed(1);
 
-                        // UÇUŞ SAATİNE GÖRE KART GÖRSELİNİ VE YAZIYI DEĞİŞTİRME
+                        // UÇUŞ SAATİNE GÖRE KART GÖRSELİNİ VE YAZIYI DEĞİŞTİRME MANTIĞI
                         const hours = data.user.flight_hours;
                         const cardImg = document.getElementById('pilotCardImage');
                         const cardStatus = document.getElementById('cardStatusText');
 
+                        // NOT: Eğer görsellerin uzantısı .png ise aşağıdaki .jpg'leri .png yapabilirsin
                         if (hours >= 250) {
                             cardImg.src = '/static/cards/platinum.jpg';
                             cardStatus.innerText = 'Tebrikler! En yüksek üyelik seviyesi olan Platinum Card sahibisiniz.';
